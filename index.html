@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高維度整合人格量表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar-inner {
+            transition: width 0.3s ease-in-out;
+        }
+        .scale-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .scale-button:hover {
+            transform: scale(1.1);
+        }
+        .scale-button:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        .scale-button.selected {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 3px currentColor;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #10b981;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+
+    <div id="app" class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">高維度整合人格量表</h1>
+            <button id="dark-mode-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" aria-label="切換深色模式">
+                <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon" style="display: none;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </header>
+
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="fade-in bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
+            <h2 class="text-3xl font-bold text-center mb-4 text-slate-900 dark:text-white">探索你的內在輪廓</h2>
+            <p class="text-slate-600 dark:text-slate-300 text-center mb-6">
+                本量表將透過 48 道題目,從多個維度分析您的人格特質、價值觀與決策風格。這不僅是一個 MBTI 測驗,更整合了情緒穩定度、社會適應力等多重面向,為您提供一份深入的個人化報告。
+            </p>
+            <div class="bg-blue-50 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 px-4 py-3 rounded-lg relative mb-6" role="alert">
+                <strong class="font-bold">作答須知:</strong>
+                <ul class="list-disc list-inside mt-2 space-y-1">
+                    <li>請依據您最真實、最自然的想法作答。</li>
+                    <li>所有題目沒有對錯之分。</li>
+                    <li>測驗結果將儲存於您的瀏覽器中,不會上傳至任何伺服器。</li>
+                    <li>預計作答時間約為 10-15 分鐘。</li>
+                </ul>
+            </div>
+            <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105">
+                開始測驗
+            </button>
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 text-center">開發者測試區</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="ntp_a">測試案例 1: NTP-A</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="stj_a">測試案例 2: STJ-A</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="nfp_t">測試案例 3: NFP-T</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
+                <!-- Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-base font-medium text-blue-700 dark:text-white">進度</span>
+                        <span id="progress-text" class="text-sm font-medium text-blue-700 dark:text-white">0 / 48</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full progress-bar-inner" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Questions Container -->
+                <div id="questions-container" class="space-y-8"></div>
+                
+                <!-- Navigation -->
+                <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <button id="reset-btn" class="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold py-2 px-6 rounded-lg transition">
+                        重新作答
+                    </button>
+                    <button id="submit-btn" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-transform transform hover:scale-105 disabled:bg-slate-400 disabled:dark:bg-slate-600 disabled:cursor-not-allowed disabled:transform-none">
+                        完成並查看結果
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden fade-in">
+            <div class="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg">
+                <div id="results-content">
+                    <!-- Dynamic content will be injected here -->
+                </div>
+                <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <button id="retake-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                        重新測驗
+                    </button>
+                    <button id="share-btn" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                        複製分享連結
+                    </button>
+                    <div class="w-full sm:w-auto flex gap-2">
+                        <button id="export-json-btn" class="flex-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg transition">匯出 JSON</button>
+                        <button id="export-csv-btn" class="flex-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold py-2 px-4 rounded-lg transition">匯出 CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-xs text-slate-500 dark:text-slate-400">
+            <p class="mb-2"><strong>免責聲明:</strong>此量表僅供自我探索、團隊溝通與娛樂之用,非臨床診斷工具,不可作為聘用人才的唯一依據。</p>
+            <p>&copy; 2025 高維度整合人格量表. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <script>
+    // ===================================================================================
+    // README / 開發指引
+    // ===================================================================================
+    // ## 理論來源
+    // 本量表綜合 MBTI(類型視角)與五大特質之優點(連續量測),
+    // 並補足情緒穩定度(A/T 變體)、社會適應力、自我認同清晰度與 Schwartz 價值觀二軸,
+    // 以提升內容效度與應用價值。
+    //
+    // ## 使用方式
+    // 使用者完成 48 題作答後,系統會根據內建的計分邏輯產出個人化報告。
+    // 結果可分享、匯出,且所有資料僅儲存於使用者本機瀏覽器。
+    //
+    // ## 二次開發指引
+    // - **題庫與常數**: 所有題目、計分規則、人格描述都定義在 `quizConfig` 物件中,
+    //   方便後續微調與擴充。
+    // - **計分邏輯**: 核心計分邏輯在 `calculateResults` 函式中,程式碼有詳細註解。
+    // - **UI 渲染**: `renderQuiz` 和 `renderResults` 函式負責渲染畫面,可客製化修改。
+    // ===================================================================================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const quizConfig = {
+            // 題庫資料
+            items: [
+                { "id": 1, "text": "我常在討論中主動發言並帶動氣氛。", "key": "E", "reverse": false },
+                { "id": 2, "text": "長時間社交後,我需要安靜獨處才恢復精神。", "key": "I", "reverse": false },
+                { "id": 3, "text": "結識新朋友讓我感到充滿能量。", "key": "E", "reverse": false },
+                { "id": 4, "text": "我更喜歡一對一或小圈子的深度對話。", "key": "I", "reverse": false },
+                { "id": 5, "text": "在社交場合,我通常先觀察而非主動介入。", "key": "I", "reverse": false },
+                { "id": 6, "text": "公開表達想法對我來說很自然。", "key": "E", "reverse": false },
+                { "id": 7, "text": "我做決策時仰賴可驗證的事實與細節。", "key": "S", "reverse": false },
+                { "id": 8, "text": "我常從零散線索中看出可能的趨勢或模式。", "key": "N", "reverse": false },
+                { "id": 9, "text": "我偏好遵循已證實有效的方法,而非冒險嘗試新點子。", "key": "S", "reverse": false },
+                { "id": 10, "text": "我會被尚未被證實的創新想法所吸引。", "key": "N", "reverse": false },
+                { "id": 11, "text": "我對抽象理論比對具體實作更感興趣。", "key": "N", "reverse": false },
+                { "id": 12, "text": "我重視可立即執行的步驟與實用性。", "key": "S", "reverse": false },
+                { "id": 13, "text": "做決策時,我優先考量公平一致的原則。", "key": "T", "reverse": false },
+                { "id": 14, "text": "當他人難過時,我會自然地先安撫情緒。", "key": "F", "reverse": false },
+                { "id": 15, "text": "在討論中,我在意論點是否嚴謹多於是否冒犯人。", "key": "T", "reverse": false },
+                { "id": 16, "text": "若規則與同理衝突,我傾向以和諧為先。", "key": "F", "reverse": false },
+                { "id": 17, "text": "我經常以「合理與否」來判斷方案。", "key": "T", "reverse": false },
+                { "id": 18, "text": "我經常以「是否照顧到人」來衡量決策。", "key": "F", "reverse": false },
+                { "id": 19, "text": "我習慣將行程與任務安排得井然有序。", "key": "J", "reverse": false },
+                { "id": 20, "text": "面對臨時變動,我樂於順勢調整並探索新可能。", "key": "P", "reverse": false },
+                { "id": 21, "text": "我喜歡盡早做決定並關上未定選項。", "key": "J", "reverse": false },
+                { "id": 22, "text": "我保留彈性,傾向晚點再做關鍵決策。", "key": "P", "reverse": false },
+                { "id": 23, "text": "照計畫一步步來讓我有安全感。", "key": "J", "reverse": false },
+                { "id": 24, "text": "我常以實驗的方式前進,邊做邊調整。", "key": "P", "reverse": false },
+                { "id": 25, "text": "壓力來臨時,我能保持冷靜並專注在可控之事。", "key": "ES+", "reverse": false },
+                { "id": 26, "text": "我容易為小事擔心,甚至睡不著。", "key": "ES-", "reverse": true },
+                { "id": 27, "text": "受到批評後,我能很快恢復平常心。", "key": "ES+", "reverse": false },
+                { "id": 28, "text": "我的心情起伏常像雲霄飛車。", "key": "ES-", "reverse": true },
+                { "id": 29, "text": "面對挫折,我很難走出來,需要很久時間。", "key": "ES-", "reverse": true },
+                { "id": 30, "text": "意外發生時,我能迅速調整心態與步驟。", "key": "ES+", "reverse": false },
+                { "id": 31, "text": "進入陌生團隊時,我能在短時間內找到合適的角色。", "key": "SA+", "reverse": false },
+                { "id": 32, "text": "遇到人際衝突時,我通常能協商出雙贏方案。", "key": "SA+", "reverse": false },
+                { "id": 33, "text": "生活出現重大變動時,我仍能維持基本作息與效率。", "key": "SA+", "reverse": false },
+                { "id": 34, "text": "我常覺得自己跟不上群體步調。", "key": "SA-", "reverse": true },
+                { "id": 35, "text": "當我無法適應時,我會主動尋求資源或協助。", "key": "SA+", "reverse": false },
+                { "id": 36, "text": "我對自己最重視的價值與信念有清楚答案。", "key": "IC+", "reverse": false },
+                { "id": 37, "text": "我對未來 3~5 年的方向相當明確。", "key": "IC+", "reverse": false },
+                { "id": 38, "text": "我常常不確定自己到底是怎樣的人。", "key": "IC-", "reverse": true },
+                { "id": 39, "text": "我的日常選擇大多與我的價值觀一致。", "key": "IC+", "reverse": false },
+                { "id": 40, "text": "我仍在嘗試不同生活方式,暫時不想做承諾。", "key": "IC-", "reverse": true },
+                { "id": 41, "text": "即使得付出代價,我也願意促進他人或社會的福祉。", "key": "ST", "reverse": false },
+                { "id": 42, "text": "取得影響力、地位與財務成功對我很重要。", "key": "SE", "reverse": false },
+                { "id": 43, "text": "我會優先保護弱勢、捍衛公平正義。", "key": "ST", "reverse": false },
+                { "id": 44, "text": "在競爭情境,我渴望勝出並展現成就。", "key": "SE", "reverse": false },
+                { "id": 45, "text": "我熱衷探索新鮮體驗與非傳統的想法。", "key": "OP", "reverse": false },
+                { "id": 46, "text": "遵循傳統與既有規範對我而言很重要。", "key": "CO", "reverse": false },
+                { "id": 47, "text": "我喜歡穩定、可預測的生活與組織。", "key": "CO", "reverse": false },
+                { "id": 48, "text": "挑戰既有做法、尋求創新讓我充滿動力。", "key": "OP", "reverse": false }
+            ],
+            scales: [ "完全符合", "相當符合", "符合", "普通", "不符", "相當不符", "完全不符" ],
+            // 題目ID對應到各個維度
+            mapToDimensions: {
+                "E": [1, 3, 6], "I": [2, 4, 5],
+                "S": [7, 9, 12], "N": [8, 10, 11],
+                "T": [13, 15, 17], "F": [14, 16, 18],
+                "J": [19, 21, 23], "P": [20, 22, 24],
+                "ES": [25, 27, 30, 26, 28, 29],
+                "SA": [31, 32, 33, 35, 34],
+                "IC": [36, 37, 39, 38, 40],
+                "ST": [41, 43], "SE": [42, 44],
+                "OP": [45, 48], "CO": [46, 47]
+            },
+            // 人格類型描述
+            personalityTypes: {
+                "NTJ": {
+                    "name": "策略分析者",
+                    "summary": "邏輯縝密、善於規劃的系統建構者,能將複雜問題化為清晰的執行藍圖。",
+                    "strengths": ["長遠眼光", "系統性思考", "決策果斷", "高效率", "意志堅定"],
+                    "weaknesses": ["可能忽略他人感受", "過於僵化、不夠靈活", "對無效率的容忍度低", "有時顯得傲慢或不耐煩", "難以處理模糊不清的狀況"],
+                    "scenarios": ["企業管理", "策略顧問", "專案管理", "系統架構師", "法律或金融領域"],
+                    "growth": ["練習積極傾聽,理解他人觀點背後的情感需求。", "刻意為計畫保留彈性,接受過程中可能出現的變化。", "學習欣賞不同工作風格的價值,不僅僅是效率。", "在給予回饋時,多考慮對方的感受,先肯定再建議。", "花時間探索與工作無關的興趣,放鬆緊繃的神經。"]
+                },
+                "NTP": {
+                    "name": "靈感創新者",
+                    "summary": "充滿好奇心與創造力的思考者,熱衷於探索新奇概念與可能性。",
+                    "strengths": ["高度創造力", "善於連結不同概念", "思考靈活、跳脫框架", "分析能力強", "對新事物抱持開放態度"],
+                    "weaknesses": ["對細節和執行缺乏耐心", "容易分心,專案難以收尾", "可能挑戰權威或既定規則", "想法太多,難以聚焦", "有時會忽略實際限制"],
+                    "scenarios": ["研發人員", "創業家", "設計師", "顧問", "學者或研究員"],
+                    "growth": ["學習將宏大構想拆解成具體可行的步驟。", "使用專案管理工具來追蹤進度,確保完成度。", "與務實的夥伴合作,由他們協助落地執行。", "在提出新點子前,先思考其可行性與潛在限制。", "練習完成一個專案後再開始下一個,培養專注力。"]
+                },
+                "NFJ": {
+                    "name": "關懷倡議者",
+                    "summary": "由價值觀與願景驅動的引導者,致力於幫助他人成長並創造更美好的世界。",
+                    "strengths": ["富有同理心", "善於激勵與凝聚人心", "有強烈的使命感", "溝通能力強", "能洞察他人潛力"],
+                    "weaknesses": ["理想主義,有時脫離現實", "對自己和他人要求過高", "容易過度承擔責任", "難以接受批評", "在幫助他人時可能忽略自身需求"],
+                    "scenarios": ["諮商師、教練", "非營利組織工作者", "教師、講師", "人力資源", "社會運動家"],
+                    "growth": ["學會設立健康的界線,明白無法為所有人的情緒負責。", "將遠大理想轉化為務實的小目標,逐步實現。", "練習接受不完美,無論是對自己還是對世界。", "尋求回饋時,將其視為成長的資訊,而非對個人的攻擊。", "定期安排自我照顧的時間,確保身心平衡。"]
+                },
+                "NFP": {
+                    "name": "共感調和者",
+                    "summary": "真誠且富有同理心的創造者,追尋生命的意義並致力於促進人際和諧。",
+                    "strengths": ["高度同理心", "價值觀堅定", "富有創意與想像力", "善於溝通與調解", "能看到事情的正面意義"],
+                    "weaknesses": ["做決定時容易猶豫不決", "界線感較弱,易受他人影響", "對衝突感到不適", "有時過於理想化", "執行力相對較弱"],
+                    "scenarios": ["藝術家、作家", "心理諮商師", "社工", "設計師", "調解員"],
+                    "growth": ["練習為自己設立清晰的界線,學會拒絕。", "在做決定時,設定一個期限,避免無限期拖延。", "明白適度的衝突是溝通的必經之路,學習正面應對。", "將創意想法與實際行動計畫結合。", "尋找能欣賞你價值觀,同時也能提供務實建議的夥伴。"]
+                },
+                "STJ": {
+                    "name": "務實監督者",
+                    "summary": "可靠、有條理的執行者,重視傳統、規則與流程,是組織的中流砥柱。",
+                    "strengths": ["責任心強", "注重細節與流程", "組織能力佳", "務實可靠", "信守承諾"],
+                    "weaknesses": ["對改變的適應力較差", "有時過於保守、缺乏彈性", "可能忽略大局與長遠趨勢", "對不遵守規則的人缺乏耐心", "較不擅長處理情感議題"],
+                    "scenarios": ["管理者", "會計、審計", "物流管理", "公務員", "工程師"],
+                    "growth": ["嘗試接受新的方法與技術,即使它們挑戰了現有流程。", "在做決策時,除了考慮「如何做」,也思考「為何做」。", "練習對他人多一點耐心,理解每個人都有自己的節奏。", "花時間與N型人交流,開拓自己的視野。", "在工作之外,嘗試一些需要靈活應變的活動。"]
+                },
+                "STP": {
+                    "name": "機巧行動者",
+"summary": "充滿活力、熱愛挑戰的實踐家,擅長在當下解決實際問題。",
+                    "strengths": ["動手能力強", "臨機應變能力佳", "善於解決眼前問題", "觀察力敏銳", "勇於冒險"],
+                    "weaknesses": ["可能缺乏長遠規劃", "容易感到無聊,尋求刺激", "有時會衝動決策", "不喜歡理論與抽象概念", "可能忽視規則與程序"],
+                    "scenarios": ["技術人員", "消防員、警察", "運動員", "銷售", "創業者"],
+                    "growth": ["在採取行動前,花一點時間思考可能的長遠後果。", "學習制定簡單的計畫,為未來做準備。", "培養對至少一個領域的深入理解,而不僅僅是淺嚐輒止。", "與J型人合作,學習他們規劃與組織的優點。", "練習在行動與反思之間找到平衡。"]
+                },
+                "SFJ": {
+                    "name": "溫暖協調者",
+                    "summary": "富有同情心與責任感的貢獻者,致力於照顧他人並維護社群的和諧。",
+                    "strengths": ["樂於助人", "有責任感", "善於組織與協調", "注重傳統與社群關係", "待人熱情友好"],
+                    "weaknesses": ["過度在意他人看法", "難以拒絕別人的請求", "有時會忽略自己的需求", "對改變感到不安", "可能過於干涉他人事務"],
+                    "scenarios": ["護理人員", "教師", "客戶服務", "活動策劃", "社群管理"],
+                    "growth": ["學習設定個人界線,明白照顧好自己才能更好地幫助他人。", "練習對不合理的請求說「不」。", "接受改變是生活的一部分,並從中尋找機會。", "在給予幫助前,先確認對方是否真的需要。", "發展自己的興趣與目標,而不僅僅是圍繞他人。"]
+                },
+                "SFP": {
+                    "name": "和善體驗者",
+                    "summary": "熱愛生活、享受當下的藝術家,用敏銳的感官為周遭帶來樂趣與美感。",
+                    "strengths": ["享受當下", "感官敏銳", "審美能力佳", "待人友善、富有魅力", "適應力強、靈活"],
+                    "weaknesses": ["可能缺乏長遠規劃", "容易分心、專注力短", "不喜歡例行公事與紀律", "在壓力下可能逃避問題", "財務管理可能較弱"],
+                    "scenarios": ["表演者、藝術家", "設計師", "活動主持人", "時尚產業", "旅遊體驗師"],
+                    "growth": ["學習制定簡單的長期目標,例如儲蓄或技能學習計畫。", "使用工具(如番茄鐘)來幫助自己保持專注。", "找到將興趣與紀律結合的方式,讓努力變得有趣。", "練習面對而非逃避困難的對話或任務。", "尋求理財建議,建立穩定的財務基礎。"]
+                }
+            },
+            variants: {
+                "A": {
+                    "modifier": "自信穩定型",
+                    "strength_phrase": "在壓力下,你通常能保持冷靜與自信,不易被負面情緒影響,並能迅速從挫折中恢復。",
+                    "growth_phrase": "注意有時可能過於自信而忽略潛在風險,或對他人的情緒波動缺乏理解。"
+                },
+                "T": {
+                    "modifier": "敏感波動型",
+                    "strength_phrase": "你對情緒與環境的變化有著高度的敏感度,這讓你善於覺察細微之處,並驅使你不斷自我完善。",
+                    "growth_phrase": "學習管理情緒波動,避免過度在意他人評價。練習自我肯定,將壓力轉化為成長的動力。"
+                }
+            },
+            // 其他維度的解釋與建議
+            valueAxes: {
+                "ST": { name: "自我超越", description: "你的決策更傾向於考慮他人的福祉、公平正義與社會貢獻。"},
+                "SE": { name: "自我提升", description: "你的決策更傾向於追求個人成就、影響力與社會地位。"},
+                "OP": { name: "開放", description: "你的決策更傾向於擁抱創新、體驗新事物與挑戰傳統。"},
+                "CO": { name: "保守", description: "你的決策更傾向於遵循傳統、維護穩定與保障安全。"},
+                "STSE_Balance": { name: "平衡 (超越/提升)", description: "你在關懷他人與追求個人成就之間取得了平衡。"},
+                "OPCO_Balance": { name: "平衡 (開放/保守)", description: "你在擁抱創新與維護穩定之間取得了平衡。"}
+            },
+            socialAdaptability: {
+                "高": {
+                    name: "高",
+                    advice: ["繼續發揮你的社交優勢,嘗試引導團隊解決更複雜的人際問題。", "可以考慮擔任導師(mentor)的角色,分享你適應環境的經驗。", "挑戰自己進入一個文化差異更大的新環境,進一步拓展你的適應邊界。"]
+                },
+                "中": {
+                    name: "中",
+                    advice: ["在進入新環境時,有意識地設定一兩個社交小目標,例如主動認識一位新同事。", "當遇到人際衝突時,嘗試在表達自己觀點前,先複述一次對方的看法以示理解。", "定期反思近期生活中的變化,思考哪些應對策略是有效的,哪些可以改進。"]
+                },
+                "低": {
+                    name: "低",
+                    advice: ["從小處開始練習,例如在熟悉的商店裡和店員多聊幾句。", "當感到壓力時,專注於你能控制的小事上,例如整理你的工作桌。", "尋找一個支持性的小團體或信賴的朋友,分享你的困擾與不安。"]
+                }
+            },
+            identityClarity: {
+                "高": {
+                    name: "高",
+                    advice: ["你的自我認同非常清晰,可以嘗試將你的價值觀透過寫作、分享等方式影響他人。", "思考如何將你的長期目標分解為更具體的年度或季度計畫。", "定期檢視你的信念,確保它們與你當下的人生階段依然契合。"]
+                },
+                "中": {
+                    name: "中",
+                    advice: ["每天花10分鐘寫下你的想法與感受,這有助於釐清內在聲音。", "嘗試接觸一些新的領域或興趣,探索自己未知的可能性。", "找一位你信任的朋友或長輩,聊聊你對未來的想法,聽聽他們的觀點。"]
+                },
+                "低": {
+                    name: "低",
+                    advice: ["不必急於定義自己是誰,先從了解「自己不是誰」開始。", "多方嘗試,允許自己犯錯。每一次體驗都是認識自己的一塊拼圖。", "閱讀不同人物的傳記,看看他們是如何找到自己的人生道路,或許能給你一些啟發。"]
+                }
+            }
+        };
+
+        // 應用程式狀態
+        let appState = {
+            currentScreen: 'welcome', // welcome, quiz, results
+            answers: {}, // { questionId: score }
+            results: null
+        };
+        
+        const totalQuestions = quizConfig.items.length;
+        let chartInstance = null; // 用於追蹤 Chart.js 實例
+        
+        // DOM 元素
+        const screens = {
+            welcome: document.getElementById('welcome-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            results: document.getElementById('results-screen')
+        };
+        const startBtn = document.getElementById('start-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const questionsContainer = document.getElementById('questions-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+
+        // ==== 核心功能函式 ====
+
+        function init() {
+            // Dark Mode Toggle
+            setupDarkMode();
+            
+            // Check for shared results in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('results')) {
+                try {
+                    const decoded = JSON.parse(atob(urlParams.get('results')));
+                    appState.answers = decoded;
+                    appState.results = calculateResults();
+                    renderResults();
+                    showScreen('results');
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error("Failed to parse shared results:", e);
+                    showToast('分享連結解析失敗,請重新測驗', 'error');
+                    loadFromLocalStorage();
+                    showScreen('welcome');
+                }
+            } else {
+                // Load from Local Storage
+                loadFromLocalStorage();
+                if (Object.keys(appState.answers).length > 0) {
+                    renderQuiz();
+                    showScreen('quiz');
+                } else {
+                    showScreen('welcome');
+                }
+            }
+            
+            setupEventListeners();
+            setupBeforeUnload();
+        }
+
+        function setupDarkMode() {
+            const toggle = document.getElementById('dark-mode-toggle');
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+
+            const applyTheme = (isDark) => {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    sunIcon.style.display = 'none';
+                    moonIcon.style.display = 'block';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    sunIcon.style.display = 'block';
+                    moonIcon.style.display = 'none';
+                }
+            };
+            
+            let isDarkMode = localStorage.getItem('darkMode') === 'true';
+            applyTheme(isDarkMode);
+
+            toggle.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                localStorage.setItem('darkMode', isDarkMode);
+                applyTheme(isDarkMode);
+            });
+        }
+
+        function setupEventListeners() {
+            startBtn.addEventListener('click', () => {
+                showScreen('quiz');
+                renderQuiz();
+            });
+
+            submitBtn.addEventListener('click', () => {
+                if (Object.keys(appState.answers).length === totalQuestions) {
+                    appState.results = calculateResults();
+                    saveToLocalStorage();
+                    renderResults();
+                    showScreen('results');
+                    window.scrollTo(0, 0);
+                }
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                if(confirm('您確定要清除所有作答紀錄並重新開始嗎?')) {
+                    resetQuiz();
+                }
+            });
+            
+            document.querySelectorAll('.test-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => runTest(e.target.dataset.case));
+            });
+        }
+
+        function setupBeforeUnload() {
+            window.addEventListener('beforeunload', (e) => {
+                if (appState.currentScreen === 'quiz' && 
+                    Object.keys(appState.answers).length > 0 &&
+                    Object.keys(appState.answers).length < totalQuestions) {
+                    e.preventDefault();
+                    e.returnValue = '您尚未完成測驗,確定要離開嗎?';
+                    return e.returnValue;
+                }
+            });
+        }
+
+        function showScreen(screenId) {
+            appState.currentScreen = screenId;
+            Object.values(screens).forEach(screen => screen.style.display = 'none');
+            screens[screenId].style.display = 'block';
+        }
+
+        function renderQuiz() {
+            questionsContainer.innerHTML = '';
+            quizConfig.items.forEach(item => {
+                const questionEl = document.createElement('div');
+                questionEl.className = 'question-block border-t border-slate-200 dark:border-slate-700 pt-6';
+                questionEl.id = `q-${item.id}`;
+
+                const questionText = document.createElement('p');
+                questionText.className = 'text-lg font-medium mb-4';
+                questionText.innerHTML = `${item.id}. ${item.text}`;
+                
+                const scaleContainer = document.createElement('div');
+                scaleContainer.className = 'flex flex-wrap items-center justify-center gap-2 sm:gap-3';
+                scaleContainer.setAttribute('role', 'radiogroup');
+                scaleContainer.setAttribute('aria-labelledby', `q-${item.id}`);
+                
+                quizConfig.scales.forEach((label, index) => {
+                    const score = 7 - index;
+                    const button = document.createElement('button');
+                    button.className = 'scale-button flex-1 sm:flex-none w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 text-sm sm:text-base font-bold flex items-center justify-center';
+                    button.setAttribute('role', 'radio');
+                    button.setAttribute('aria-label', `選擇分數 ${score}: ${label}`);
+                    button.setAttribute('aria-checked', 'false');
+                    button.tabIndex = 0;
+                    
+                    const colors = [
+                        'border-green-500 text-green-600 dark:text-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/50',
+                        'border-green-400 text-green-500 dark:text-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/30',
+                        'border-lime-400 text-lime-600 dark:text-lime-400 dark:border-lime-500 bg-lime-50 dark:bg-lime-900/30',
+                        'border-slate-300 text-slate-500 dark:text-slate-400 dark:border-slate-600 bg-slate-100 dark:bg-slate-700/50',
+                        'border-amber-400 text-amber-600 dark:text-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/30',
+                        'border-red-400 text-red-500 dark:text-red-400 dark:border-red-500 bg-red-50 dark:bg-red-900/30',
+                        'border-red-500 text-red-600 dark:text-red-400 dark:border-red-500 bg-red-50 dark:bg-red-900/50'
+                    ];
+                    button.classList.add(...colors[index].split(' '));
+
+                    button.textContent = score;
+                    button.title = label;
+                    
+                    if (appState.answers[item.id] === score) {
+                        button.classList.add('selected');
+                        button.setAttribute('aria-checked', 'true');
+                        const colorMap = {
+                            0: '#bbf7d0', 1: '#bbf7d0', 2: '#d9f99d',
+                            3: '#e2e8f0', 4: '#fde68a', 5: '#fecaca', 6: '#fecaca'
+                        };
+                        button.style.backgroundColor = colorMap[index];
+                    }
+                    
+                    button.dataset.questionId = item.id;
+                    button.dataset.score = score;
+                    button.addEventListener('click', handleAnswer);
+                    
+                    // 鍵盤支援
+                    button.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleAnswer(e);
+                        }
+                    });
+                    
+                    scaleContainer.appendChild(button);
+                });
+
+                questionEl.appendChild(questionText);
+                questionEl.appendChild(scaleContainer);
+                questionsContainer.appendChild(questionEl);
+            });
+            updateProgress();
+        }
+
+        function handleAnswer(event) {
+            const { questionId, score } = event.currentTarget.dataset;
+            appState.answers[questionId] = parseInt(score, 10);
+            
+            // Update UI for selected button
+            const parent = event.currentTarget.parentElement;
+            parent.querySelectorAll('.scale-button').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.style.backgroundColor = '';
+                btn.setAttribute('aria-checked', 'false');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            event.currentTarget.setAttribute('aria-checked', 'true');
+            
+            // 使用明確的顏色值
+            const colorMap = {
+                7: '#bbf7d0', 6: '#bbf7d0', 5: '#d9f99d',
+                4: '#e2e8f0', 3: '#fde68a', 2: '#fecaca', 1: '#fecaca'
+            };
+            event.currentTarget.style.backgroundColor = colorMap[parseInt(score)];
+
+            saveToLocalStorage();
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const answeredCount = Object.keys(appState.answers).length;
+            const progress = (answeredCount / totalQuestions) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${answeredCount} / ${totalQuestions}`;
+            submitBtn.disabled = answeredCount !== totalQuestions;
+        }
+
+        function calculateResults() {
+            const consoleLog = { intermediateScores: {} };
+
+            // Helper to get average score for a dimension
+            const getAvg = (ids) => {
+                let sum = 0;
+                ids.forEach(id => {
+                    const item = quizConfig.items.find(i => i.id === id);
+                    let score = appState.answers[id];
+                    if (item.reverse) {
+                        score = 8 - score; // 分數範圍 1-7, 反轉為 8-score
+                    }
+                    sum += score;
+                });
+                return sum / ids.length;
+            };
+
+            // Calculate raw scores
+            const rawScores = {
+                E_sum: getAvg(quizConfig.mapToDimensions.E),
+                I_sum: getAvg(quizConfig.mapToDimensions.I),
+                S_sum: getAvg(quizConfig.mapToDimensions.S),
+                N_sum: getAvg(quizConfig.mapToDimensions.N),
+                T_sum: getAvg(quizConfig.mapToDimensions.T),
+                F_sum: getAvg(quizConfig.mapToDimensions.F),
+                J_sum: getAvg(quizConfig.mapToDimensions.J),
+                P_sum: getAvg(quizConfig.mapToDimensions.P),
+                ES_score: getAvg(quizConfig.mapToDimensions.ES),
+                SA_score: getAvg(quizConfig.mapToDimensions.SA),
+                IC_score: getAvg(quizConfig.mapToDimensions.IC),
+                ST_mean: getAvg(quizConfig.mapToDimensions.ST),
+                SE_mean: getAvg(quizConfig.mapToDimensions.SE),
+                OP_mean: getAvg(quizConfig.mapToDimensions.OP),
+                CO_mean: getAvg(quizConfig.mapToDimensions.CO),
+            };
+            consoleLog.rawScores = rawScores;
+
+            const finalResult = {};
+
+            // C. MBTI 3 Keys (S/N, T/F, J/P)
+            const getPreference = (left, right, tiebreakerPref, tiebreakerScore) => {
+                const diff = left - right;
+                if (diff >= 0.25) return 'left';
+                if (diff <= -0.25) return 'right';
+                // Tie-breaker: 使用身份清晰度作為平手判定
+                if (tiebreakerScore >= 4.5 && tiebreakerPref === 'left') return 'left_tie';
+                if (tiebreakerScore >= 4.5 && tiebreakerPref === 'right') return 'right_tie';
+                return left > right ? 'left_tie' : 'right_tie';
+            };
+            
+            let sn_res = getPreference(rawScores.N_sum, rawScores.S_sum, 'left', rawScores.IC_score);
+            finalResult.SN = sn_res.startsWith('left') ? 'N' : 'S';
+            
+            let tf_res = getPreference(rawScores.T_sum, rawScores.F_sum, 'right', rawScores.IC_score);
+            finalResult.TF = tf_res.startsWith('left') ? 'T' : 'F';
+
+            let jp_res = getPreference(rawScores.J_sum, rawScores.P_sum, 'left', rawScores.IC_score);
+            finalResult.JP = jp_res.startsWith('left') ? 'J' : 'P';
+            
+            finalResult.coreType = `${finalResult.SN}${finalResult.TF}${finalResult.JP}`;
+
+            consoleLog.coreTypeCalc = { sn_res, tf_res, jp_res, coreType: finalResult.coreType };
+
+            // D. Emotion Variant (A/T)
+            if (rawScores.ES_score >= 4.5) {
+                finalResult.variant = 'A';
+            } else if (rawScores.ES_score <= 3.5) {
+                finalResult.variant = 'T';
+            } else {
+                finalResult.variant = rawScores.IC_score >= 4.5 ? 'A' : 'T';
+            }
+            consoleLog.variantCalc = { ES_score: rawScores.ES_score, IC_score: rawScores.IC_score, variant: finalResult.variant };
+
+            // E. Interaction Style (E/I)
+            const ei_diff = rawScores.E_sum - rawScores.I_sum;
+            if (ei_diff >= 0.25) {
+                finalResult.interaction = 'E';
+            } else if (ei_diff <= -0.25) {
+                finalResult.interaction = 'I';
+            } else {
+                // 使用社會適應力作為平手判定
+                if (rawScores.SA_score >= 4.2) finalResult.interaction = 'E';
+                else if (rawScores.SA_score <= 3.8) finalResult.interaction = 'I';
+                else finalResult.interaction = rawScores.E_sum > rawScores.I_sum ? 'E' : 'I';
+            }
+            consoleLog.interactionCalc = { ei_diff, SA_score: rawScores.SA_score, interaction: finalResult.interaction };
+
+            // 組合完整的 4 字母類型
+            finalResult.fullType = finalResult.interaction + finalResult.coreType;
+            consoleLog.fullType = finalResult.fullType;
+
+            // F. Social Adaptability
+            if (rawScores.SA_score >= 5.0) finalResult.socialAdaptability = '高';
+            else if (rawScores.SA_score >= 3.6) finalResult.socialAdaptability = '中';
+            else finalResult.socialAdaptability = '低';
+            
+            // G. Identity Clarity
+            if (rawScores.IC_score >= 4.8) finalResult.identityClarity = '高';
+            else if (rawScores.IC_score >= 3.8) finalResult.identityClarity = '中';
+            else finalResult.identityClarity = '低';
+
+            // H. Value Axes
+            const stse_diff = rawScores.ST_mean - rawScores.SE_mean;
+            if (stse_diff >= 0.4) finalResult.valueAxis1 = 'ST';
+            else if (stse_diff <= -0.4) finalResult.valueAxis1 = 'SE';
+            else finalResult.valueAxis1 = 'STSE_Balance';
+
+            const opco_diff = rawScores.OP_mean - rawScores.CO_mean;
+            if (opco_diff >= 0.4) finalResult.valueAxis2 = 'OP';
+            else if (opco_diff <= -0.4) finalResult.valueAxis2 = 'CO';
+            else finalResult.valueAxis2 = 'OPCO_Balance';
+
+            finalResult.rawScores = rawScores;
+            console.log("Calculation Details:", consoleLog);
+            return finalResult;
+        }
+        
+        function renderResults() {
+            const r = appState.results;
+            if (!r) return;
+
+            const coreTypeInfo = quizConfig.personalityTypes[r.coreType];
+            const variantInfo = quizConfig.variants[r.variant];
+            
+            const value1Info = quizConfig.valueAxes[r.valueAxis1];
+            const value2Info = quizConfig.valueAxes[r.valueAxis2];
+            const socialInfo = quizConfig.socialAdaptability[r.socialAdaptability];
+            const identityInfo = quizConfig.identityClarity[r.identityClarity];
+
+            let html = `
+                <!-- Header Card -->
+                <div class="text-center p-6 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 rounded-2xl text-white shadow-lg mb-8">
+                    <h2 class="text-4xl font-bold">${coreTypeInfo.name}-${r.variant} (${r.fullType})</h2>
+                    <p class="mt-2 text-lg opacity-90">${coreTypeInfo.summary}</p>
+                    <div class="mt-4 text-sm space-y-1 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center items-center">
+                        <span>價值觀: <strong>${value1Info.name} × ${value2Info.name}</strong></span>
+                        <span class="hidden sm:inline">|</span>
+                        <span>社會適應: <strong>${socialInfo.name}</strong></span>
+                        <span class="hidden sm:inline">|</span>
+                        <span>認同清晰: <strong>${identityInfo.name}</strong></span>
+                    </div>
+                </div>
+
+                <!-- Charts and Details Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Radar Chart -->
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold mb-4 text-center">人格維度圖</h3>
+                        <canvas id="resultsChart"></canvas>
+                    </div>
+
+                    <!-- Core Descriptions -->
+                    <div class="space-y-6">
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl">
+                           <h3 class="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">核心特質:${coreTypeInfo.name} (${r.coreType})</h3>
+                           <p class="text-base text-slate-600 dark:text-slate-300 mb-4">${variantInfo.strength_phrase}</p>
+                           <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">優勢</h4>
+                           <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300">${coreTypeInfo.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
+                           <h4 class="font-semibold text-amber-600 dark:text-amber-400 mt-4 mb-2">常見盲點</h4>
+                           <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300">${coreTypeInfo.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Sections -->
+                <div class="space-y-6">
+                    ${createSection('建議情境 / 職能', coreTypeInfo.scenarios.map(s => `<li>${s}</li>`).join(''), 'briefcase')}
+                    ${createSection('個人成長建議', coreTypeInfo.growth.map(s => `<li>${s}</li>`).join('') + `<li class="mt-2 text-indigo-600 dark:text-indigo-400">${variantInfo.growth_phrase}</li>`, 'trending-up')}
+                    ${createSection('價值觀解讀', `<p>${value1Info.description}</p><p class="mt-2">${value2Info.description}</p>`, 'gem')}
+                    ${createSection('社會適應力分析', socialInfo.advice.map(s => `<li>${s}</li>`).join(''), 'users')}
+                    ${createSection('自我認同清晰度', identityInfo.advice.map(s => `<li>${s}</li>`).join(''), 'user-check')}
+                </div>
+            `;
+            
+            document.getElementById('results-content').innerHTML = html;
+            
+            // Attach event listeners for the new buttons
+            document.getElementById('retake-btn').addEventListener('click', () => {
+                if(confirm('您確定要清除所有作答紀錄並重新開始嗎?')) {
+                    resetQuiz();
+                }
+            });
+            document.getElementById('share-btn').addEventListener('click', handleShare);
+            document.getElementById('export-json-btn').addEventListener('click', () => handleExport('json'));
+            document.getElementById('export-csv-btn').addEventListener('click', () => handleExport('csv'));
+
+            // Render Chart
+            renderChart(r.rawScores);
+        }
+        
+        function createSection(title, content, iconName) {
+            const iconSVG = {
+                'briefcase': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3 text-blue-500"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+                'trending-up': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3 text-green-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+                'gem': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3 text-purple-500"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="m12 22 4-13-3-6h-2L8 9l4 13"/><path d="M2 9h20"/></svg>`,
+                'users': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3 text-teal-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+                'user-check': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mr-3 text-indigo-500"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>`
+            };
+            return `
+            <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl">
+                <div class="flex items-center mb-3">
+                    ${iconSVG[iconName]}
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">${title}</h3>
+                </div>
+                <div class="text-slate-600 dark:text-slate-300 space-y-2 pl-9">
+                    ${typeof content === 'string' && content.startsWith('<li>') ? `<ul class="list-disc list-inside space-y-1">${content}</ul>` : content}
+                </div>
+            </div>
+            `;
+        }
+
+        function renderChart(rawScores) {
+            // 銷毀舊的 Chart 實例
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            const ctx = document.getElementById('resultsChart');
+            if (!ctx) return;
+
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+            const labelColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)';
+
+            const data = {
+                labels: ['外向 (E)', '直覺 (N)', '思考 (T)', '判斷 (J)', '情緒穩定', '社會適應', '自我認同'],
+                datasets: [{
+                    label: '你的得分',
+                    data: [
+                        rawScores.E_sum,
+                        rawScores.N_sum,
+                        rawScores.T_sum,
+                        rawScores.J_sum,
+                        rawScores.ES_score,
+                        rawScores.SA_score,
+                        rawScores.IC_score,
+                    ],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2
+                },{
+                    label: '對應維度',
+                    data: [
+                        rawScores.I_sum,
+                        rawScores.S_sum,
+                        rawScores.F_sum,
+                        rawScores.P_sum,
+                        4, // 中性基準線
+                        4, // 中性基準線
+                        4, // 中性基準線
+                    ],
+                    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    pointBackgroundColor: 'rgba(107, 114, 128, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(107, 114, 128, 1)',
+                    borderWidth: 2
+                }]
+            };
+
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            min: 1,
+                            max: 7,
+                            angleLines: { color: gridColor },
+                            grid: { color: gridColor },
+                            pointLabels: { color: labelColor, font: { size: 12 } },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: labelColor,
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            labels: { color: labelColor },
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.r.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==== 輔助功能函式 ====
+
+        function resetQuiz() {
+            appState.answers = {};
+            appState.results = null;
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            localStorage.removeItem('personalityQuizState');
+            showScreen('welcome');
+            showToast('已重置測驗', 'success');
+        }
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('personalityQuizState', JSON.stringify(appState));
+            } catch (e) {
+                console.error('Failed to save to localStorage:', e);
+                showToast('儲存失敗,請檢查瀏覽器設定', 'error');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const savedState = localStorage.getItem('personalityQuizState');
+                if (savedState) {
+                    const parsed = JSON.parse(savedState);
+                    // 驗證資料結構
+                    if (parsed && typeof parsed === 'object') {
+                        appState = parsed;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to parse saved state:", e);
+                localStorage.removeItem('personalityQuizState');
+                showToast('載入儲存資料失敗,已清除', 'error');
+            }
+        }
+        
+        function handleShare() {
+            try {
+                const answersToShare = btoa(JSON.stringify(appState.answers));
+                const shareUrl = `${window.location.origin}${window.location.pathname}?results=${answersToShare}`;
+                
+                if (shareUrl.length > 2000) {
+                    showToast('分享連結過長,建議使用匯出功能', 'warning');
+                    return;
+                }
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showToast('分享連結已複製到剪貼簿!', 'success');
+                    }).catch(() => {
+                        fallbackCopyToClipboard(shareUrl);
+                    });
+                } else {
+                    fallbackCopyToClipboard(shareUrl);
+                }
+            } catch (e) {
+                console.error('Share failed:', e);
+                showToast('複製失敗,請手動複製連結', 'error');
+            }
+        }
+
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast('分享連結已複製到剪貼簿!', 'success');
+            } catch (err) {
+                showToast('複製失敗,請手動複製連結', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+        
+        function handleExport(format) {
+            try {
+                const data = {
+                    answers: appState.answers,
+                    results: appState.results,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+
+                if (format === 'json') {
+                    const jsonString = JSON.stringify(data, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    downloadFile(url, `personality_results_${Date.now()}.json`);
+                    showToast('JSON 匯出成功', 'success');
+                } else if (format === 'csv') {
+                    let csvContent = "\uFEFF"; // UTF-8 BOM
+                    csvContent += "Question ID,Question Text,Score\n";
+                    quizConfig.items.forEach(item => {
+                        const answer = appState.answers[item.id] || '';
+                        csvContent += `"${item.id}","${item.text.replace(/"/g, '""')}","${answer}"\n`;
+                    });
+                    csvContent += "\nDimension,Score\n";
+                    for (const [key, value] of Object.entries(appState.results.rawScores)) {
+                        csvContent += `"${key}",${value.toFixed(2)}\n`;
+                    }
+                    csvContent += "\nResult Type,Value\n";
+                    csvContent += `"Full Type","${appState.results.fullType}"\n`;
+                    csvContent += `"Core Type","${appState.results.coreType}"\n`;
+                    csvContent += `"Variant","${appState.results.variant}"\n`;
+                    
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    downloadFile(url, `personality_results_${Date.now()}.csv`);
+                    showToast('CSV 匯出成功', 'success');
+                }
+            } catch (e) {
+                console.error('Export failed:', e);
+                showToast('匯出失敗', 'error');
+            }
+        }
+        
+        function downloadFile(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            // 延遲釋放 URL
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
+            toast.style.backgroundColor = colors[type] || colors.success;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        function runTest(testCase) {
+            const testData = {
+                ntp_a: {E:6, I:2, N:7, S:1, T:6, F:2, P:7, J:1, ES:6, SA:6, IC:6, ST:6, SE:2, OP:7, CO:1},
+                stj_a: {E:2, I:6, S:7, N:1, T:7, F:1, J:7, P:1, ES:6, SA:6, IC:7, ST:1, SE:7, OP:1, CO:7},
+                nfp_t: {E:2, I:6, N:7, S:1, T:1, F:7, P:7, J:1, ES:2, SA:4, IC:3, ST:7, SE:1, OP:5, CO:5}
+            };
+            
+            const data = testData[testCase];
+            if (!data) {
+                console.error('Test case not found:', testCase);
+                return;
+            }
+            
+            appState.answers = {};
+            
+            // 改進的測試案例映射邏輯
+            const keyMap = {
+                'E': 'E', 'I': 'I',
+                'N': 'N', 'S': 'S',
+                'T': 'T', 'F': 'F',
+                'J': 'J', 'P': 'P',
+                'ES+': 'ES', 'ES-': 'ES',
+                'SA+': 'SA', 'SA-': 'SA',
+                'IC+': 'IC', 'IC-': 'IC',
+                'ST': 'ST', 'SE': 'SE',
+                'OP': 'OP', 'CO': 'CO'
+            };
+            
+            quizConfig.items.forEach(item => {
+                const mappedKey = keyMap[item.key];
+                let score = data[mappedKey] || 4; // 預設中性值
+                
+                // 對於反向題目,調整分數
+                if (item.reverse && (item.key === 'ES-' || item.key === 'SA-' || item.key === 'IC-')) {
+                    score = 8 - score;
+                }
+                
+                appState.answers[item.id] = score;
+            });
+            
+            console.log(`Running Test Case: ${testCase}`, appState.answers);
+            appState.results = calculateResults();
+            renderResults();
+            showScreen('results');
+            window.scrollTo(0, 0);
+            showToast(`測試案例 ${testCase.toUpperCase()} 已載入`, 'info');
+        }
+
+        // 初始化應用程式
+        init();
+    });
+    </script>
+</body>
+</html>
