@@ -94,10 +94,14 @@
             </button>
             <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 text-center">開發者測試區</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="ntp_a">測試案例 1: NTP-A</button>
                     <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="stj_a">測試案例 2: STJ-A</button>
                     <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="nfp_t">測試案例 3: NFP-T</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="entj_a">測試案例 4: ENTJ-A</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="intj_t">測試案例 5: INTJ-T</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="isfp_a">測試案例 6: ISFP-A</button>
+                    <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="enfp_t">測試案例 7: ENFP-T</button>
                 </div>
             </div>
         </div>
@@ -324,6 +328,18 @@
                     "modifier": "敏感波動型",
                     "strength_phrase": "你對情緒與環境的變化有著高度的敏感度,這讓你善於覺察細微之處,並驅使你不斷自我完善。",
                     "growth_phrase": "學習管理情緒波動,避免過度在意他人評價。練習自我肯定,將壓力轉化為成長的動力。"
+                }
+            },
+            eiAdjust: {
+                E: {
+                    tagline: "你偏向外向:能量來自互動與行動。",
+                    bullets: ["偏好即時互動與口語溝通", "團隊場合較易主動", "行動帶動思考的節奏"],
+                    growthSuggestion: "外向:定期安排安靜的反思時段,讓行動與策略更一致。"
+                },
+                I: {
+                    tagline: "你偏向內向:能量來自獨處與深思。",
+                    bullets: ["偏好深度對話與書面表達", "需要獨處充電", "思考後再行動、較重質量"],
+                    growthSuggestion: "內向:刻意設定公開分享或協作場合,鍛鍊外部表達與影響力。"
                 }
             },
             // 其他維度的解釋與建議
@@ -692,6 +708,7 @@
 
             // 組合完整的 4 字母類型
             finalResult.fullType = finalResult.interaction + finalResult.coreType;
+            finalResult.fourLetterType = finalResult.fullType;
             consoleLog.fullType = finalResult.fullType;
 
             // F. Social Adaptability
@@ -724,18 +741,51 @@
             const r = appState.results;
             if (!r) return;
 
-            const coreTypeInfo = quizConfig.personalityTypes[r.coreType];
-            const variantInfo = quizConfig.variants[r.variant];
-            
+            const coreTypeInfo = quizConfig.personalityTypes[r.coreType] || {
+                name: r.coreType || '未知類型',
+                summary: '',
+                strengths: [],
+                weaknesses: [],
+                scenarios: [],
+                growth: []
+            };
+            const variantInfo = quizConfig.variants[r.variant] || {
+                modifier: r.variant || '',
+                strength_phrase: '',
+                growth_phrase: ''
+            };
+            const interactionInfo = quizConfig.eiAdjust[r.interaction] || { tagline: '', bullets: [], growthSuggestion: '' };
+
             const value1Info = quizConfig.valueAxes[r.valueAxis1];
             const value2Info = quizConfig.valueAxes[r.valueAxis2];
             const socialInfo = quizConfig.socialAdaptability[r.socialAdaptability];
             const identityInfo = quizConfig.identityClarity[r.identityClarity];
 
+            const four = r.fourLetterType || r.fullType || '';
+            const baseFour = four || r.coreType || '';
+            const fourWithVariant = baseFour ? `${baseFour}-${r.variant}` : r.variant;
+            const variantSummary = `A/T 變體觀察（${variantInfo.modifier}）：${variantInfo.strength_phrase}`;
+            const interactionBullets = (interactionInfo.bullets || []).map(point => `<li>${point}</li>`).join('') || '<li>暫無對應說明,後續將補齊。</li>';
+            const interactionSection = `
+                <div class="mt-4 border-t border-slate-200 dark:border-slate-700 pt-4">
+                    <h4 class="font-semibold text-blue-600 dark:text-blue-400 mb-2">互動風格（${r.interaction}）</h4>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 mb-2">${interactionInfo.tagline || ''}</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300">${interactionBullets}</ul>
+                </div>`;
+
+            const eiGrowthAdvice = interactionInfo.growthSuggestion || (r.interaction === 'E'
+                ? '外向:以每週的反思時間收斂行動步調,讓熱情更聚焦。'
+                : '內向:安排定期的公開分享或協作任務,練習把洞見帶到外部。');
+            const growthList = [
+                ...coreTypeInfo.growth.map(s => `<li>${s}</li>`),
+                `<li class="mt-2 text-indigo-600 dark:text-indigo-400 font-medium">${variantInfo.growth_phrase}</li>`,
+                `<li class="text-sky-600 dark:text-sky-400 font-medium">${eiGrowthAdvice}</li>`
+            ].join('');
+
             let html = `
                 <!-- Header Card -->
                 <div class="text-center p-6 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 rounded-2xl text-white shadow-lg mb-8">
-                    <h2 class="text-4xl font-bold">${coreTypeInfo.name}-${r.variant} (${r.fullType})</h2>
+                    <h2 class="text-4xl font-bold">${coreTypeInfo.name}-${r.variant} (${fourWithVariant})</h2>
                     <p class="mt-2 text-lg opacity-90">${coreTypeInfo.summary}</p>
                     <div class="mt-4 text-sm space-y-1 sm:space-y-0 sm:space-x-4 flex flex-col sm:flex-row justify-center items-center">
                         <span>價值觀: <strong>${value1Info.name} × ${value2Info.name}</strong></span>
@@ -758,19 +808,20 @@
                     <div class="space-y-6">
                         <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl">
                            <h3 class="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">核心特質:${coreTypeInfo.name} (${r.coreType})</h3>
-                           <p class="text-base text-slate-600 dark:text-slate-300 mb-4">${variantInfo.strength_phrase}</p>
+                           <p class="text-base text-slate-600 dark:text-slate-300 mb-4">${variantSummary}</p>
                            <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">優勢</h4>
                            <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300">${coreTypeInfo.strengths.map(s => `<li>${s}</li>`).join('')}</ul>
                            <h4 class="font-semibold text-amber-600 dark:text-amber-400 mt-4 mb-2">常見盲點</h4>
                            <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300">${coreTypeInfo.weaknesses.map(w => `<li>${w}</li>`).join('')}</ul>
+                           ${interactionSection}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Detailed Sections -->
                 <div class="space-y-6">
                     ${createSection('建議情境 / 職能', coreTypeInfo.scenarios.map(s => `<li>${s}</li>`).join(''), 'briefcase')}
-                    ${createSection('個人成長建議', coreTypeInfo.growth.map(s => `<li>${s}</li>`).join('') + `<li class="mt-2 text-indigo-600 dark:text-indigo-400">${variantInfo.growth_phrase}</li>`, 'trending-up')}
+                    ${createSection('個人成長建議', growthList, 'trending-up')}
                     ${createSection('價值觀解讀', `<p>${value1Info.description}</p><p class="mt-2">${value2Info.description}</p>`, 'gem')}
                     ${createSection('社會適應力分析', socialInfo.advice.map(s => `<li>${s}</li>`).join(''), 'users')}
                     ${createSection('自我認同清晰度', identityInfo.advice.map(s => `<li>${s}</li>`).join(''), 'user-check')}
@@ -988,14 +1039,41 @@
             }
             document.body.removeChild(textArea);
         }
-        
+
+        function sanityCheck() {
+            const interactions = ['E', 'I'];
+            const coreKeys = ['NTJ', 'NTP', 'NFJ', 'NFP', 'STJ', 'STP', 'SFJ', 'SFP'];
+            const variants = ['A', 'T'];
+            interactions.forEach(interaction => {
+                coreKeys.forEach(coreKey => {
+                    if (!quizConfig.personalityTypes[coreKey]) {
+                        console.warn('[Sanity] Missing copy for', { interaction, coreKey, target: 'core' });
+                    }
+                    if (!quizConfig.eiAdjust || !quizConfig.eiAdjust[interaction]) {
+                        console.warn('[Sanity] Missing copy for', { interaction, coreKey, target: 'interaction' });
+                    }
+                    variants.forEach(variant => {
+                        if (!quizConfig.variants || !quizConfig.variants[variant]) {
+                            console.warn('[Sanity] Missing copy for', { interaction, coreKey, target: 'variant', variant });
+                        }
+                    });
+                });
+            });
+        }
+
         function handleExport(format) {
             try {
+                const four = appState.results?.fourLetterType || appState.results?.fullType || '';
+                const baseFour = four || appState.results?.coreType || '';
+                const fourWithVariant = baseFour && appState.results?.variant ? `${baseFour}-${appState.results.variant}` : baseFour || appState.results?.variant || '';
+                const generatedAt = new Date().toISOString();
                 const data = {
                     answers: appState.answers,
                     results: appState.results,
-                    exportDate: new Date().toISOString(),
-                    version: '1.0'
+                    meta: {
+                        fourLetterType: baseFour,
+                        generatedAt
+                    }
                 };
 
                 if (format === 'json') {
@@ -1016,10 +1094,11 @@
                         csvContent += `"${key}",${value.toFixed(2)}\n`;
                     }
                     csvContent += "\nResult Type,Value\n";
-                    csvContent += `"Full Type","${appState.results.fullType}"\n`;
+                    csvContent += `"Full Type","${fourWithVariant}"\n`;
                     csvContent += `"Core Type","${appState.results.coreType}"\n`;
+                    csvContent += `"fourLetterType","${baseFour}"\n`;
                     csvContent += `"Variant","${appState.results.variant}"\n`;
-                    
+
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     downloadFile(url, `personality_results_${Date.now()}.csv`);
@@ -1067,36 +1146,46 @@
 
         function runTest(testCase) {
             const testData = {
-                ntp_a: {E:6, I:2, N:7, S:1, T:6, F:2, P:7, J:1, ES:6, SA:6, IC:6, ST:6, SE:2, OP:7, CO:1},
-                stj_a: {E:2, I:6, S:7, N:1, T:7, F:1, J:7, P:1, ES:6, SA:6, IC:7, ST:1, SE:7, OP:1, CO:7},
-                nfp_t: {E:2, I:6, N:7, S:1, T:1, F:7, P:7, J:1, ES:2, SA:4, IC:3, ST:7, SE:1, OP:5, CO:5}
+                ntp_a: {E:6, I:2, N:7, S:1, T:6, F:2, P:7, J:1, ESPlus:6, ESMinus:2, SAPlus:6, SAMinus:3, ICPlus:6, ICMinus:3, ST:6, SE:2, OP:7, CO:1},
+                stj_a: {E:2, I:6, S:7, N:1, T:7, F:1, J:7, P:1, ESPlus:6, ESMinus:2, SAPlus:6, SAMinus:3, ICPlus:7, ICMinus:2, ST:1, SE:7, OP:1, CO:7},
+                nfp_t: {E:2, I:6, N:7, S:1, T:1, F:7, P:7, J:1, ESPlus:2, ESMinus:6, SAPlus:4, SAMinus:4, ICPlus:3, ICMinus:5, ST:7, SE:1, OP:5, CO:5},
+                entj_a: {E:6, I:2, N:6, S:3, T:6, F:3, J:6, P:3, ESPlus:6, ESMinus:2, SAPlus:5, SAMinus:3, ICPlus:5, ICMinus:3, ST:4, SE:6, OP:4, CO:6},
+                intj_t: {E:2, I:6, N:6, S:3, T:6, F:3, J:6, P:3, ESPlus:4, ESMinus:4, SAPlus:4, SAMinus:4, ICPlus:4, ICMinus:4, ST:5, SE:5, OP:5, CO:5},
+                isfp_a: {E:3, I:5, N:3, S:6, T:3, F:6, J:3, P:6, ESPlus:6, ESMinus:2, SAPlus:4, SAMinus:3, ICPlus:4, ICMinus:3, ST:5, SE:4, OP:4, CO:4},
+                enfp_t: {E:6, I:2, N:6, S:3, T:3, F:6, J:3, P:6, ESPlus:3, ESMinus:6, SAPlus:4, SAMinus:4, ICPlus:4, ICMinus:4, ST:6, SE:4, OP:6, CO:3}
             };
-            
+
             const data = testData[testCase];
             if (!data) {
                 console.error('Test case not found:', testCase);
                 return;
             }
-            
+
             appState.answers = {};
-            
+
             // 改進的測試案例映射邏輯
             const keyMap = {
-                'E': 'E', 'I': 'I',
-                'N': 'N', 'S': 'S',
-                'T': 'T', 'F': 'F',
-                'J': 'J', 'P': 'P',
-                'ES+': 'ES', 'ES-': 'ES',
-                'SA+': 'SA', 'SA-': 'SA',
-                'IC+': 'IC', 'IC-': 'IC',
-                'ST': 'ST', 'SE': 'SE',
-                'OP': 'OP', 'CO': 'CO'
+                'E': ['E'], 'I': ['I'],
+                'N': ['N'], 'S': ['S'],
+                'T': ['T'], 'F': ['F'],
+                'J': ['J'], 'P': ['P'],
+                'ES+': ['ESPlus', 'ES'], 'ES-': ['ESMinus', 'ES'],
+                'SA+': ['SAPlus', 'SA'], 'SA-': ['SAMinus', 'SA'],
+                'IC+': ['ICPlus', 'IC'], 'IC-': ['ICMinus', 'IC'],
+                'ST': ['ST'], 'SE': ['SE'],
+                'OP': ['OP'], 'CO': ['CO']
             };
-            
+
             quizConfig.items.forEach(item => {
-                const mappedKey = keyMap[item.key];
-                let score = data[mappedKey] || 4; // 預設中性值
-                
+                const candidates = keyMap[item.key] || [item.key];
+                let score = 4; // 預設中性值
+                for (const candidate of candidates) {
+                    if (candidate in data) {
+                        score = data[candidate];
+                        break;
+                    }
+                }
+
                 // 對於反向題目,調整分數
                 if (item.reverse && (item.key === 'ES-' || item.key === 'SA-' || item.key === 'IC-')) {
                     score = 8 - score;
@@ -1114,6 +1203,7 @@
         }
 
         // 初始化應用程式
+        sanityCheck();
         init();
     });
     </script>
