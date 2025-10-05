@@ -13,6 +13,29 @@
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+      const loadApp = async () => {
+        const currentUrl = import.meta.url;
+        const isDistBuild = currentUrl.includes('/dist/');
+        const assetBase = isDistBuild ? './assets/' : './dist/assets/';
+        const builtJsUrl = new URL(`${assetBase}index.js`, currentUrl).href;
+
+        if (currentUrl.endsWith('/dist/assets/index.js')) {
+          await import(new URL('./main.js', currentUrl).href);
+          return;
+        }
+
+        try {
+          await import(builtJsUrl);
+          return;
+        } catch (error) {
+          console.warn('無法載入預建版資源,改用開發模式載入。', error);
+        }
+
+        await import('/src/main.ts');
+      };
+
+      loadApp();
+    </script>
   </body>
 </html>
