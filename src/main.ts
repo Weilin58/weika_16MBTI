@@ -33,33 +33,101 @@ appElement.innerHTML = `
       </button>
     </header>
 
-    <div id="welcome-screen" class="fade-in bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
-      <h2 class="text-3xl font-bold text-center mb-4 text-slate-900 dark:text-white">探索你的內在輪廓</h2>
-      <p class="text-slate-600 dark:text-slate-300 text-center mb-6">
-        本量表將透過 48 道題目,從多個維度分析您的人格特質、價值觀與決策風格。這不僅是一個 MBTI 測驗,更整合了情緒穩定度、社會適應力等多重面向,為您提供一份深入的個人化報告。
-      </p>
-      <div class="bg-blue-50 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 px-4 py-3 rounded-lg relative mb-6" role="alert">
-        <strong class="font-bold">作答須知:</strong>
-        <ul class="list-disc list-inside mt-2 space-y-1">
-          <li>請依據您最真實、最自然的想法作答。</li>
-          <li>所有題目沒有對錯之分。</li>
-          <li>測驗結果將儲存於您的瀏覽器中,不會上傳至任何伺服器。</li>
-          <li>預計作答時間約為 10-15 分鐘。</li>
-        </ul>
+    <div
+      id="welcome-screen"
+      class="fade-in relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-50 via-white to-amber-50 dark:from-slate-900 dark:via-slate-950 dark:to-black shadow-2xl"
+    >
+      <div class="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-amber-200/60 blur-3xl dark:bg-amber-500/10"></div>
+      <div class="absolute -bottom-16 -left-16 h-52 w-52 rounded-full bg-blue-200/50 blur-3xl dark:bg-blue-500/10"></div>
+      <div class="relative z-10 grid gap-10 p-8 sm:p-10 lg:grid-cols-[1.1fr,0.9fr]">
+        <div class="space-y-6">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm ring-1 ring-white/50 dark:bg-white/5 dark:text-amber-200 dark:ring-amber-500/30">
+            <span class="inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
+            高維度整合人格量表
+          </div>
+          <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+            探索你的內在輪廓
+          </h2>
+          <p class="text-base leading-relaxed text-slate-600 dark:text-slate-300">
+            本量表將透過 48 道題目,從多個維度分析您的人格特質、價值觀與決策風格。這不僅是一個 MBTI 測驗,更整合了情緒穩定度、社會適應力等多重面向,為您提供一份深入的個人化報告。
+          </p>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-white/50 backdrop-blur-sm dark:bg-slate-900/60 dark:ring-slate-700">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-900 dark:text-white">預估時間</p>
+                  <p class="text-sm text-slate-500 dark:text-slate-300">10-15 分鐘</p>
+                </div>
+              </div>
+            </div>
+            <div class="rounded-2xl bg-white/80 p-5 shadow-sm ring-1 ring-white/50 backdrop-blur-sm dark:bg-slate-900/60 dark:ring-slate-700">
+              <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-900 dark:text-white">結果保護</p>
+                  <p class="text-sm text-slate-500 dark:text-slate-300">僅儲存於您的瀏覽器</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col justify-between gap-6 rounded-3xl bg-white/85 p-6 shadow-xl ring-1 ring-white/60 backdrop-blur-md dark:bg-slate-900/70 dark:ring-slate-700">
+          <div>
+            <div class="mb-4 flex items-center gap-3 text-lg font-semibold text-slate-900 dark:text-white">
+              <span class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg">!</span>
+              作答須知
+            </div>
+            <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+              <li class="flex items-start gap-3">
+                <span class="mt-0.5 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-amber-500"></span>
+                請依據您最真實、最自然的想法作答。
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-0.5 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-amber-500"></span>
+                所有題目沒有對錯之分。
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-0.5 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-amber-500"></span>
+                測驗結果將儲存於您的瀏覽器中,不會上傳至任何伺服器。
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="mt-0.5 inline-flex h-2.5 w-2.5 flex-none rounded-full bg-amber-500"></span>
+                預計作答時間約為 10-15 分鐘。
+              </li>
+            </ul>
+          </div>
+          <button
+            id="start-btn"
+            class="group relative inline-flex w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-3 text-lg font-semibold text-white shadow-lg transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          >
+            <span class="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition-transform group-hover:translate-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7 7 7-7-7-7" />
+              </svg>
+            </span>
+            開始測驗
+          </button>
+        </div>
       </div>
-      <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg text-lg transition-transform transform hover:scale-105">
-        開始測驗
-      </button>
-      <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
-        <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2 text-center">開發者測試區</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="ntp_a">測試案例 1: NTP-A</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="stj_a">測試案例 2: STJ-A</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="nfp_t">測試案例 3: NFP-T</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="entj_a">測試案例 4: ENTJ-A</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="intj_t">測試案例 5: INTJ-T</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="isfp_a">測試案例 6: ISFP-A</button>
-          <button class="test-btn text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium py-2 px-3 rounded-md" data-case="enfp_t">測試案例 7: ENFP-T</button>
+      <div class="relative z-10 border-t border-slate-200/70 px-8 py-6 dark:border-slate-800/80">
+        <h3 class="text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">開發者測試區</h3>
+        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="ntp_a">測試案例 1: NTP-A</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="stj_a">測試案例 2: STJ-A</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="nfp_t">測試案例 3: NFP-T</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="entj_a">測試案例 4: ENTJ-A</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="intj_t">測試案例 5: INTJ-T</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="isfp_a">測試案例 6: ISFP-A</button>
+          <button class="test-btn text-xs font-medium uppercase tracking-wide text-slate-700 transition hover:-translate-y-0.5 hover:bg-white/80 hover:shadow dark:text-slate-200 dark:hover:bg-slate-800/80 dark:hover:shadow-lg rounded-lg border border-slate-200/60 bg-white/70 px-3 py-2 dark:border-slate-700/80" data-case="enfp_t">測試案例 7: ENFP-T</button>
         </div>
       </div>
     </div>
